@@ -152,6 +152,7 @@ body {
     color: var(--success-text);
 }
 
+/* --- Dashboard Styles --- */
 .header {
     display: flex;
     justify-content: space-between;
@@ -198,6 +199,7 @@ h2 {
     margin-bottom: 25px;
 }
 
+/* --- Table Styles --- */
 .table-wrapper {
     overflow-x: auto;
 }
@@ -312,6 +314,7 @@ h2 {
     width: auto;
 }
 
+/* --- Responsive Design --- */
 @media (max-width: 992px) {
     .user-dashboard .main-content {
         grid-template-columns: 1fr;
