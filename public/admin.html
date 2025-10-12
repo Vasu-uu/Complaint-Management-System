@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="dashboard-body">
+    <header class="header glass-card">
+        <h1>Admin Dashboard</h1>
+        <button id="signOutBtn" class="btn-signout">Sign Out</button>
+    </header>
+    <main class="container">
+        <div id="notification" class="notification"></div>
+        <div class="card glass-card">
+            <div class="tabs">
+                <button class="tab-link active" data-tab="active">Active Complaints</button>
+                <button class="tab-link" data-tab="history">History</button>
+            </div>
+
+            <div id="active" class="tab-content active">
+                <div class="content-header">
+                    <h2>Active User Complaints</h2>
+                    <div class="form-group sort-group">
+                        <label for="sortActive">Sort By</label>
+                        <select id="sortActive">
+                            <option value="new">Newest First</option>
+                            <option value="old">Oldest First</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="table-wrapper">
+                    <table id="complaintsTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>User Name</th>
+                                <th>Category</th>
+                                <th>Description</th>
+                                <th>Status</th>
+                                <th>Action & Message</th>
+                            </tr>
+                        </thead>
+                        <tbody id="complaintsList"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="history" class="tab-content">
+                <div class="content-header">
+                    <h2>Resolved Complaints History</h2>
+                    <div class="form-group sort-group">
+                        <label for="sortHistory">Sort By</label>
+                        <select id="sortHistory">
+                            <option value="new">Newest First</option>
+                            <option value="old">Oldest First</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="table-wrapper">
+                    <table id="historyTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>User Name</th>
+                                <th>Category</th>
+                                <th>Description</th>
+                                <th>Submitted On</th>
+                                <th>Status</th>
+                                <th>Resolution Message</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyList"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script src="script.js"></script>
+</body>
+</html>
