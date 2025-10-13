@@ -1,0 +1,16 @@
+{
+  "name": "complaint-system",
+  "version": "1.0.0",
+  "description": "A complaint management system with user and admin roles.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "express": "^4.19.2",
+    "express-session": "^1.18.0",
+    "mysql2": "^3.9.7",
+    "uuid": "^9.0.1"
+  }
+}
