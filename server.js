@@ -7,6 +7,7 @@ const path = require('path');
 
 const app = express();
 const port = 3000;
+const SALT_ROUNDS = 10; // For bcrypt
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -22,7 +23,7 @@ app.use(session({
 const db = mysql.createConnection({
     host: 'localhost',
     user: 'root',
-    password: 'your_mysql_password', 
+    password: 'Vasu2005', 
     database: 'complaint_db'
 });
 
@@ -34,6 +35,7 @@ db.connect((err) => {
     console.log('Successfully connected to the MySQL database.');
 });
 
+// --- Middleware ---
 const checkAuth = (req, res, next) => {
     if (!req.session.userId) {
         return res.status(401).json({ message: 'Unauthorized: Please sign in.' });
@@ -48,6 +50,54 @@ const checkAdmin = (req, res, next) => {
     next();
 };
 
+// --- Auth Routes ---
+
+app.post('/api/auth/signup', (req, res) => {
+    const { fullName, email, password } = req.body;
+
+    if (!fullName || !email || !password) {
+        return res.status(400).json({ message: 'All fields are required.' });
+    }
+    
+    if (password.length < 6) {
+        return res.status(400).json({ message: 'Password must be at least 6 characters.' });
+    }
+
+    // Check if user already exists
+    const checkUserSql = 'SELECT email FROM users WHERE email = ?';
+    db.query(checkUserSql, [email], async (err, results) => {
+        if (err) {
+            console.error('Database error during user check:', err);
+            return res.status(500).json({ message: 'Server error during sign-up.' });
+        }
+        if (results.length > 0) {
+            return res.status(409).json({ message: 'Email is already in use.' });
+        }
+
+        // User does not exist, proceed with creation
+        try {
+            const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+            
+            // --- THIS IS THE FIX ---
+            // We no longer provide the 'id' field, as your table will auto-increment it.
+            const newUserSql = 'INSERT INTO users (fullName, email, password, role) VALUES (?, ?, ?, ?)';
+            
+            // New users are *always* given the 'user' role for security
+            // We no longer pass a 'userId' variable here.
+            db.query(newUserSql, [fullName, email, hashedPassword, 'user'], (insertErr) => {
+                if (insertErr) {
+                    console.error('Database error during user insertion:', insertErr);
+                    // This is where the "Failed to create account" error was coming from
+                    return res.status(500).json({ message: 'Failed to create account.' });
+                }
+                res.status(201).json({ message: 'Account created successfully! Please sign in.' });
+            });
+        } catch (hashErr) {
+            console.error('Error hashing password:', hashErr);
+            res.status(500).json({ message: 'Server error during account creation.' });
+        }
+    });
+});
 
 app.post('/api/auth/signin', (req, res) => {
     const { email, password } = req.body;
@@ -68,7 +118,8 @@ app.post('/api/auth/signin', (req, res) => {
         const isMatch = await bcrypt.compare(password, user.password);
 
         if (isMatch) {
-            req.session.userId = user.id;
+            // This is now correct. user.id will be the INT from your database.
+            req.session.userId = user.id; 
             req.session.role = user.role;
             res.json({ message: 'Sign-in successful!', role: user.role });
         } else {
@@ -87,10 +138,17 @@ app.post('/api/auth/signout', (req, res) => {
     });
 });
 
+// --- Complaint Routes (Admin) ---
+
 app.post('/api/complaints', checkAuth, (req, res) => {
-    const id = uuidv4();
+    // This is correct. Your 'complaints' table 'id' is a CHAR(36)
+    const id = uuidv4(); 
     const { category, description } = req.body;
-    const userId = req.session.userId;
+    
+    // This is now also correct. req.session.userId is the INT.
+    const userId = req.session.userId; 
+    
+    // This query now perfectly matches your schema.
     const sql = 'INSERT INTO complaints (id, userId, Category, Description) VALUES (?, ?, ?, ?)';
     db.query(sql, [id, userId, category, description], (err) => {
         if (err) {
@@ -137,19 +195,6 @@ app.get('/api/complaints/history', checkAuth, checkAdmin, (req, res) => {
     });
 });
 
-
-app.get('/api/user/complaints', checkAuth, (req, res) => {
-    const userId = req.session.userId;
-    const sql = 'SELECT * FROM complaints WHERE userId = ? ORDER BY submissionDate DESC';
-    db.query(sql, [userId], (err, results) => {
-        if (err) {
-            console.error('Error fetching user complaints:', err);
-            return res.status(500).json({ message: 'Failed to fetch your complaints.' });
-        }
-        res.json(results);
-    });
-});
-
 app.put('/api/complaints/:id', checkAuth, checkAdmin, (req, res) => {
     const complaintId = req.params.id;
     const { status, resolutionMessage } = req.body;
@@ -166,9 +211,28 @@ app.put('/api/complaints/:id', checkAuth, checkAdmin, (req, res) => {
     });
 });
 
+// --- Complaint Routes (User) ---
+
+app.get('/api/user/complaints', checkAuth, (req, res) => {
+    // This is correct. userId is the INT.
+    const userId = req.session.userId;
+    const sql = 'SELECT * FROM complaints WHERE userId = ? ORDER BY submissionDate DESC';
+    db.query(sql, [userId], (err, results) => {
+        if (err) {
+            console.error('Error fetching user complaints:', err);
+            return res.status(500).json({ message: 'Failed to fetch your complaints.' });
+        }
+        res.json(results);
+    });
+});
+
+// --- Root Route ---
+
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'signin.html'));
 });
+
+// --- Server Start ---
 
 app.listen(port, () => {
     console.log(`Server is running at http://localhost:${port}`);
