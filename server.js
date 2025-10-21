@@ -23,7 +23,7 @@ app.use(session({
 const db = mysql.createConnection({
     host: 'localhost',
     user: 'root',
-    password: 'Vasu2005', 
+    password: 'Your_SQL_Password_Here', 
     database: 'complaint_db'
 });
 
