@@ -77,17 +77,12 @@ app.post('/api/auth/signup', (req, res) => {
         // User does not exist, proceed with creation
         try {
             const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
-            
-            // --- THIS IS THE FIX ---
-            // We no longer provide the 'id' field, as your table will auto-increment it.
             const newUserSql = 'INSERT INTO users (fullName, email, password, role) VALUES (?, ?, ?, ?)';
             
-            // New users are *always* given the 'user' role for security
-            // We no longer pass a 'userId' variable here.
             db.query(newUserSql, [fullName, email, hashedPassword, 'user'], (insertErr) => {
                 if (insertErr) {
                     console.error('Database error during user insertion:', insertErr);
-                    // This is where the "Failed to create account" error was coming from
+                
                     return res.status(500).json({ message: 'Failed to create account.' });
                 }
                 res.status(201).json({ message: 'Account created successfully! Please sign in.' });
@@ -141,14 +136,11 @@ app.post('/api/auth/signout', (req, res) => {
 // --- Complaint Routes (Admin) ---
 
 app.post('/api/complaints', checkAuth, (req, res) => {
-    // This is correct. Your 'complaints' table 'id' is a CHAR(36)
     const id = uuidv4(); 
     const { category, description } = req.body;
     
-    // This is now also correct. req.session.userId is the INT.
     const userId = req.session.userId; 
     
-    // This query now perfectly matches your schema.
     const sql = 'INSERT INTO complaints (id, userId, Category, Description) VALUES (?, ?, ?, ?)';
     db.query(sql, [id, userId, category, description], (err) => {
         if (err) {
@@ -214,7 +206,6 @@ app.put('/api/complaints/:id', checkAuth, checkAdmin, (req, res) => {
 // --- Complaint Routes (User) ---
 
 app.get('/api/user/complaints', checkAuth, (req, res) => {
-    // This is correct. userId is the INT.
     const userId = req.session.userId;
     const sql = 'SELECT * FROM complaints WHERE userId = ? ORDER BY submissionDate DESC';
     db.query(sql, [userId], (err, results) => {
@@ -226,13 +217,11 @@ app.get('/api/user/complaints', checkAuth, (req, res) => {
     });
 });
 
-// --- Root Route ---
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'signin.html'));
 });
 
-// --- Server Start ---
 
 app.listen(port, () => {
     console.log(`Server is running at http://localhost:${port}`);
