@@ -9,7 +9,7 @@ The platform ensures transparency by monitoring each complaint through various s
 This project was developed by a team of three, with responsibilities divided as follows:
 
 - **Swathi Menon (Admin Frontend Developer):** Responsible for the entire admin dashboard interface, including the tabbed view for active/history, sorting functionality, and all related styling and client-side logic.
-- **Vasudev V (User Frontend & Auth Developer):** Responsible for the user-facing components, including the sign-in page, the user dashboard for submitting complaints, and viewing personal complaint history.
+- **Vasudev V (User Frontend & Auth Developer):** Responsible for the user-facing components, including the sign-in page,sign-up page,the user dashboard for submitting complaints, and viewing personal complaint history.
 - **Thanvi Sreenivasan (Backend & Database Developer):** Responsible for all server-side logic, creating and managing the API endpoints, database schema design, and handling user authentication and session management.
 
 ## Key Features
@@ -18,7 +18,7 @@ This project was developed by a team of three, with responsibilities divided as 
 Separate, tailored interfaces for regular users and administrators.
 
 ### User Functionality
-- Secure user sign-in.
+- Secure user sign-in/sign-up.
 - A simple form to lodge new complaints with categories.
 - A personal dashboard to view the status and resolution messages for all submitted complaints.
 
